@@ -38,8 +38,7 @@ class FieldsLibraryGenerator extends GeneratorForAnnotation<Fields> {
 
     final code = StringBuffer();
 
-    final fileName =
-        element.library!.source.uri.pathSegments.last.split('.').first;
+    final fileName = element.library!.source.uri.pathSegments.last.split('.').first;
     code.writeln("part of '${fileName}.dart';");
 
     if (type == FieldClassType.classType || type == null) {
@@ -109,8 +108,12 @@ class FieldsLibraryGenerator extends GeneratorForAnnotation<Fields> {
     return code.toString();
   }
 
+  static final _leadingUnderscore = RegExp(r'^_');
   String _className(String name) {
-    return name.replaceFirst('_\$', '').replaceFirst('Impl', '');
+    return name
+        .replaceFirst(_leadingUnderscore, '')
+        .replaceFirst('_\$', '')
+        .replaceFirst('Impl', '');
   }
 
   String _generateEnumCode(Element element, Fields annotation) {
