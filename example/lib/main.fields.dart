@@ -1,5 +1,5 @@
-// dart format width=80
 // GENERATED CODE - DO NOT MODIFY BY HAND
+// dart format width=80
 
 // **************************************************************************
 // FieldsLibraryGenerator
@@ -21,10 +21,7 @@ abstract final class UserFields {
 }
 
 /// [User] fields
-@JsonEnum(
-  fieldRename: FieldRename.none,
-  valueField: 'value',
-)
+@JsonEnum(fieldRename: FieldRename.none, valueField: 'value')
 enum UserFieldsEnum {
   name('name'),
   age('age');

@@ -38,7 +38,7 @@ class FieldsLibraryGenerator extends GeneratorForAnnotation<Fields> {
 
     final code = StringBuffer();
 
-    final fileName = element.library!.source.uri.pathSegments.last.split('.').first;
+    final fileName = buildStep.inputId.pathSegments.last.split('.').first;
     code.writeln("part of '${fileName}.dart';");
 
     if (type == FieldClassType.classType || type == null) {
@@ -69,7 +69,7 @@ class FieldsLibraryGenerator extends GeneratorForAnnotation<Fields> {
     if (element is ClassElement) {
       final includedFields = _includedFields(element, annotation);
 
-      final String className = _className(element.name);
+      final String className = _className(element.name!);
       final String fieldsClassName = '${className}Fields';
 
       code.writeln('/// [$className] fields');
@@ -80,7 +80,7 @@ class FieldsLibraryGenerator extends GeneratorForAnnotation<Fields> {
       final fieldsNames = <String>[];
 
       for (final field in includedFields) {
-        final name = field.name;
+        final name = field.name!;
         final value = encodedFieldName(annotation.fieldRename, name);
 
         final String fieldName;
@@ -122,7 +122,7 @@ class FieldsLibraryGenerator extends GeneratorForAnnotation<Fields> {
     if (element is ClassElement) {
       final includedFields = _includedFields(element, annotation);
 
-      final className = _className(element.name);
+      final className = _className(element.name!);
 
       final String enumName = '${className}FieldsEnum';
 
@@ -133,18 +133,22 @@ class FieldsLibraryGenerator extends GeneratorForAnnotation<Fields> {
       code.writeln(')');
       code.writeln('enum $enumName {');
 
-      for (final (index, field) in includedFields.indexed) {
-        final name = field.name;
-        final value = encodedFieldName(annotation.fieldRename, name);
+      if (includedFields.isNotEmpty) {
+        for (final (index, field) in includedFields.indexed) {
+          final name = field.name!;
+          final value = encodedFieldName(annotation.fieldRename, name);
 
-        if (index == includedFields.length - 1) {
-          code.writeln('  $name(\'$value\');');
-        } else {
-          code.writeln('  $name(\'$value\'),');
+          if (index == includedFields.length - 1) {
+            code.writeln('  $name(\'$value\');');
+          } else {
+            code.writeln('  $name(\'$value\'),');
+          }
         }
+        code.writeln('  final String value;');
+        code.writeln('  const $enumName(this.value);');
+      } else {
+        code.writeln('  // No fields found');
       }
-      code.writeln('  final String value;');
-      code.writeln('  const $enumName(this.value);');
 
       code.writeln('}');
     }
