@@ -7,11 +7,14 @@ part 'main.g.dart';
 
 @freezed
 abstract class User with _$User {
-@fields
-  factory User({
-    required String name,
-    required int age,
-  }) = _User;
+  @fields
+  factory User({required String name, required int age}) = _User;
 
   factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
+}
+
+@fields
+class A {
+  final String x;
+  A(this.x);
 }

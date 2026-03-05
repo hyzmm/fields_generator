@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'utils.dart';
@@ -7,14 +9,56 @@ import 'package:source_helper/source_helper.dart';
 
 import 'annotations.dart';
 
-class FieldsLibraryGenerator extends GeneratorForAnnotation<Fields> {
+class FieldsLibraryGenerator extends Generator {
+  static const _fieldsChecker = TypeChecker.typeNamed(
+    Fields,
+    inPackage: 'fields_generator',
+  );
+
   @override
-  String generateForAnnotatedElement(
-    Element element,
-    ConstantReader annotation,
+  FutureOr<String> generate(
+    LibraryReader library,
     BuildStep buildStep,
   ) {
-    final annotationValue = Fields(
+    final code = StringBuffer();
+    final fileName = buildStep.inputId.pathSegments.last.split('.').first;
+
+    var wrotePartOf = false;
+
+    for (final element in library.classes) {
+      final annotationObject = _fieldsChecker.firstAnnotationOf(
+        element,
+        throwOnUnresolved: false,
+      );
+
+      if (annotationObject == null) {
+        continue;
+      }
+
+      if (!wrotePartOf) {
+        code.writeln("part of '${fileName}.dart';");
+        wrotePartOf = true;
+      }
+
+      final annotationValue = _readFieldsAnnotation(
+        ConstantReader(annotationObject),
+      );
+      final type = annotationValue.type;
+
+      if (type == FieldClassType.classType || type == null) {
+        code.writeln(_generateClassCode(element, annotationValue));
+      }
+
+      if (type == FieldClassType.enumType || type == null) {
+        code.writeln(_generateEnumCode(element, annotationValue));
+      }
+    }
+
+    return code.toString();
+  }
+
+  Fields _readFieldsAnnotation(ConstantReader annotation) {
+    return Fields(
       includePrivate: annotation.read(FieldsNames.includePrivate).boolValue,
       includeStatic: annotation.read(FieldsNames.includeStatic).boolValue,
       type: readEnum(
@@ -33,23 +77,6 @@ class FieldsLibraryGenerator extends GeneratorForAnnotation<Fields> {
           FieldRename.none,
       suffix: annotation.read(FieldsNames.suffix).stringValue,
     );
-
-    final type = annotationValue.type;
-
-    final code = StringBuffer();
-
-    final fileName = buildStep.inputId.pathSegments.last.split('.').first;
-    code.writeln("part of '${fileName}.dart';");
-
-    if (type == FieldClassType.classType || type == null) {
-      code.writeln(_generateClassCode(element, annotationValue));
-    }
-
-    if (type == FieldClassType.enumType || type == null) {
-      code.writeln(_generateEnumCode(element, annotationValue));
-    }
-
-    return code.toString();
   }
 
   List<FieldElement> _includedFields(ClassElement element, Fields annotation) {

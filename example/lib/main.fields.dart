@@ -7,6 +7,25 @@
 
 part of 'main.dart';
 
+/// [A] fields
+abstract final class AFields {
+  const AFields._();
+
+  /// [A.x]
+  static const String x = 'x';
+
+  static const List<String> fieldsNames = [x];
+}
+
+/// [A] fields
+@JsonEnum(fieldRename: FieldRename.none, valueField: 'value')
+enum AFieldsEnum {
+  x('x');
+
+  final String value;
+  const AFieldsEnum(this.value);
+}
+
 /// [User] fields
 abstract final class UserFields {
   const UserFields._();
